@@ -1,49 +1,68 @@
 # puppet file that sets up my web servers for the deployment of web_static
-
-# Ensure Nginx is installed and the service is running
 package { 'nginx':
-  ensure => 'installed',
+  ensure => installed,
 }
 
-service { 'nginx':
-  ensure => 'running',
-}
-
-# Create necessary directories
-file { ['/data', '/data/web_static', '/data/web_static/releases', '/data/web_static/shared', '/data/web_static/releases/test']:
-  ensure => 'directory',
+file { '/data':
+  ensure => directory,
   owner  => 'ubuntu',
   group  => 'ubuntu',
 }
 
-# Create the fake HTML file
+file { '/data/web_static':
+  ensure => directory,
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
+
+file { '/data/web_static/releases':
+  ensure => directory,
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
+
+file { '/data/web_static/shared':
+  ensure => directory,
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+}
+
 file { '/data/web_static/releases/test/index.html':
-  ensure  => 'file',
-  content => 'Hello World',
+  content => 'Holberton School',
   owner   => 'ubuntu',
   group   => 'ubuntu',
 }
 
-# Create the symbolic link
 file { '/data/web_static/current':
-  ensure => 'link',
-  target => '/data/web_static/releases/test',
-  force  => true,
+  ensure => link,
+  target => '/data/web_static/releases/test/',
   owner  => 'ubuntu',
   group  => 'ubuntu',
 }
 
-# Update Nginx configuration
-file_line { 'hbnb_static':
-  path    => '/etc/nginx/sites-available/default',
-  line    => 'location /hbnb_static { alias /data/web_static/current/; }',
-  match   => '^[\s]*location \/ {',
-  ensure  => present,
-  require => File['/data/web_static/current'],
+file { '/etc/nginx/sites-available/default':
+  ensure => present,
+  source => 'puppet:///modules/mymodule/default',
 }
 
-# Restart Nginx
+file { '/etc/nginx/sites-enabled/default':
+  ensure => 'link',
+  target => '/etc/nginx/sites-available/default',
+}
+
+file { '/etc/nginx/sites-available/default':
+  content => template('mymodule/nginx.conf.erb'),
+}
+
 service { 'nginx':
-  ensure => 'running',
-  require => File_line['hbnb_static'],
+  ensure  => running,
+  enable  => true,
+  require => [
+    File['/data/web_static/current'],
+    File['/etc/nginx/sites-enabled/default'],
+  ],
+  subscribe => [
+    File['/etc/nginx/sites-available/default'],
+    File['/data/web_static/current'],
+  ],
 }
