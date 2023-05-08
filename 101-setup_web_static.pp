@@ -10,31 +10,7 @@ service { 'nginx':
   enable => true,
 }
 
-# Create the necessary directories
-file { ['/data', '/data/web_static', '/data/web_static/releases', '/data/web_static/shared', '/data/web_static/releases/test']:
-  ensure => directory,
-  owner  => 'ubuntu',
-  group  => 'ubuntu',
-}
-
-# Create the test HTML file
-file { '/data/web_static/releases/test/index.html':
-  content => 'Holberton School',
-  owner   => 'ubuntu',
-  group   => 'ubuntu',
-}
-
-# Create the symbolic link
-file { '/data/web_static/current':
-  ensure => 'link',
-  target => '/data/web_static/releases/test',
-}
-
-# Update the Nginx configuration
-file { '/etc/nginx/sites-available/default':
-  content => template('nginx/default.erb'),
-  owner   => 'root',
-  group   => 'root',
-  mode    => '0644',
-  notify  => Service['nginx'],
+exec { 'server setup':
+  command  => 'sudo mkdir -p /data/web_static/shared/ && sudo mkdir -p /data/web_static/releases/test/ && echo "Holberton School" | sudo tee /data/web_static/releases/test/index.html > /dev/null && sudo ln -sf /data/web_static/releases/test/ /data/web_static/current && sudo chown -R ubuntu:ubuntu /data/ && sudo sed -i \'44i \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\' /etc/nginx/sites-available/default && sudo service nginx restart',
+  provider => shell,
 }
