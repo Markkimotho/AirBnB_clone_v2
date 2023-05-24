@@ -19,6 +19,7 @@ def hbnb():
     """
     return 'HBNB'
 
+
 @app.route('/c/<text>', strict_slashes=False)
 def c_text(text):
     """Return C_text
@@ -31,7 +32,7 @@ def c_text(text):
 def python_text(text="is cool"):
     """Return Python Text
     """
-    return 'Python {}'.format(text.replace('_',' '))
+    return 'Python {}'.format(text.replace('_', ' '))
 
 
 if __name__ == '__main__':
