@@ -21,20 +21,16 @@ echo "
 " | sudo tee /data/web_static/releases/test/index.html > /dev/null
 
 # Symbolic link
-sudo ln -sf /data/web_static/releases/test/ /data/web_static/current 
+sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
 
 # File permissions
 sudo chown -R ubuntu:ubuntu /data/
 
 # Update Nginx config 
-echo "server {
-    listen 80;
-
-    location /hbnb_static {
-        alias /data/web_static/current/;
-        index index.html;
-    }
-}" | sudo tee /etc/nginx/sites-available/default > /dev/null
+sudo sed -i '/server {/a \
+    location /hbnb_static/ {\
+        alias /data/web_static/current/;\
+    }' /etc/nginx/sites-available/default
 
 # Restart Nginx to update changes
 sudo service nginx restart
